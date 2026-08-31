@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Minecraft servers</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#127918;</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="wrap">
+  <header>
+    <h1>Minecraft servers</h1>
+    <p class="sub" id="sub">Connecting&hellip;</p>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <section id="list" class="list" aria-live="polite">
+    <div class="empty">Loading servers&hellip;</div>
+  </section>
+
+  <section class="gate">
+    <label for="pass">Passphrase</label>
+    <input id="pass" type="password" autocomplete="current-password"
+           placeholder="ask whoever runs the servers">
+    <p class="hint">Saved in this browser only. Needed to start or stop.</p>
+  </section>
+
+  <details class="settings">
+    <summary>Connection settings</summary>
+    <label for="api">API address</label>
+    <input id="api" type="url" placeholder="https://something.trycloudflare.com">
+    <p class="hint">
+      The tunnel address printed by <code>tunnel.bat</code> on the machine
+      running the servers. Changes each time a quick tunnel restarts.
+    </p>
+    <button id="save" class="ghost" type="button">Save</button>
+  </details>
+
+  <footer>
+    <p>The host machine has to be switched on for any of this to work.</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
