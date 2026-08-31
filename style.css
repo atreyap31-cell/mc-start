@@ -77,6 +77,39 @@ h1 { margin: 0 0 .25rem; font-size: 1.6rem; letter-spacing: -.01em; }
 
 .meta { flex: 1; min-width: 0; }
 .name { font-weight: 600; }
+
+.addr-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: .15rem 0 .1rem;
+  min-width: 0;
+}
+
+/* Small enough to sit beside the address without competing with Start. */
+.copy {
+  flex: none;
+  padding: .1rem .45rem;
+  font-size: .72rem;
+  line-height: 1.6;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+.copy:hover { color: var(--ink); border-color: var(--muted); }
+.copy.copied { color: var(--online); border-color: var(--online); }
+
+/* Shown where the Start button would be, once a server is up. Deliberately
+   not a button - visitors cannot stop servers. */
+.badge-online {
+  flex: none;
+  padding: .5rem .9rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--online);
+  white-space: nowrap;
+}
 .state { color: var(--muted); font-size: .85rem; }
 .addr {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;

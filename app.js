@@ -118,6 +118,68 @@
     return "No API address set - open Connection settings and paste the tunnel address.";
   }
 
+  function copyText(text) {
+    // navigator.clipboard needs a secure context. GitHub Pages and localhost
+    // both qualify, but fall back for anything that does not.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var scratch = document.createElement("textarea");
+        scratch.value = text;
+        scratch.setAttribute("readonly", "");
+        scratch.style.position = "fixed";
+        scratch.style.opacity = "0";
+        document.body.appendChild(scratch);
+        scratch.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(scratch);
+        ok ? resolve() : reject(new Error("copy refused"));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  function copyButton(address) {
+    var button = document.createElement("button");
+    button.className = "copy";
+    button.type = "button";
+    button.textContent = "Copy";
+    button.title = "Copy " + address;
+    button.setAttribute("aria-label", "Copy address " + address);
+
+    button.addEventListener("click", function (event) {
+      // Don't let the click reach the row and trigger anything else.
+      event.stopPropagation();
+      copyText(address)
+        .then(function () {
+          button.textContent = "Copied";
+          button.classList.add("copied");
+        })
+        .catch(function () {
+          // Clipboard blocked: select it so they can copy by hand.
+          button.textContent = "Select it";
+          var node = button.previousSibling;
+          if (node && window.getSelection) {
+            var range = document.createRange();
+            range.selectNodeContents(node);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+        })
+        .then(function () {
+          setTimeout(function () {
+            button.textContent = "Copy";
+            button.classList.remove("copied");
+          }, 1500);
+        });
+    });
+    return button;
+  }
+
   function render(servers) {
     if (!servers.length) {
       els.list.innerHTML = '<div class="empty">No servers on the account.</div>';
@@ -141,25 +203,47 @@
       name.textContent = server.name;
       meta.appendChild(name);
 
+      // The address shows whether or not the server is up, so people can put
+      // it in Minecraft first and start it after.
+      if (server.address) {
+        var addrRow = document.createElement("div");
+        addrRow.className = "addr-row";
+
+        var addr = document.createElement("span");
+        addr.className = "addr";
+        addr.textContent = server.address;
+        addrRow.appendChild(addr);
+
+        addrRow.appendChild(copyButton(server.address));
+        meta.appendChild(addrRow);
+      }
+
       var state = document.createElement("div");
-      state.className = server.address ? "addr" : "state";
-      state.textContent = server.address || server.label;
+      state.className = "state";
+      state.textContent = server.label;
       meta.appendChild(state);
 
       row.appendChild(meta);
 
-      var button = document.createElement("button");
       var online = server.status === "online";
       var moving = server.status === "queued" || server.status === "starting";
 
-      button.textContent = online ? "Stop" : moving ? "Starting…" : "Start";
-      button.disabled = moving || busy[server.name];
-      if (online) button.className = "ghost";
-
-      button.addEventListener("click", function () {
-        act(online ? "stop" : "start", server.name, button);
-      });
-      row.appendChild(button);
+      if (online) {
+        // Visitors start servers, they don't stop them - somebody could be
+        // mid-game. Aternos shuts an empty server down by itself.
+        var badge = document.createElement("span");
+        badge.className = "badge-online";
+        badge.textContent = "Running";
+        row.appendChild(badge);
+      } else {
+        var button = document.createElement("button");
+        button.textContent = moving ? "Starting…" : "Start";
+        button.disabled = moving || busy[server.name];
+        button.addEventListener("click", function () {
+          act("start", server.name, button);
+        });
+        row.appendChild(button);
+      }
 
       els.list.appendChild(row);
     });
