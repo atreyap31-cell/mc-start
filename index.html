@@ -22,20 +22,13 @@
     <div class="empty">Loading servers&hellip;</div>
   </section>
 
-  <section class="gate">
-    <label for="pass">Passphrase</label>
-    <input id="pass" type="password" autocomplete="current-password"
-           placeholder="ask whoever runs the servers">
-    <p class="hint">Saved in this browser only. Needed to start a server.</p>
-  </section>
-
   <details class="settings">
     <summary>Connection settings</summary>
     <label for="api">API address</label>
     <input id="api" type="url" placeholder="https://something.trycloudflare.com">
     <p class="hint">
-      The tunnel address printed by <code>tunnel.bat</code> on the machine
-      running the servers. Changes each time a quick tunnel restarts.
+      The tunnel address printed on the machine running the servers.
+      Changes each time a quick tunnel restarts.
     </p>
     <button id="save" class="ghost" type="button">Save</button>
   </details>

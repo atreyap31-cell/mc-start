@@ -157,6 +157,14 @@ input {
 }
 
 .hint { margin: .5rem 0 0; color: var(--muted); font-size: .8rem; }
+
+.gate-row { display: flex; gap: .5rem; align-items: stretch; }
+.gate-row input { flex: 1; min-width: 0; }
+.gate-row button { flex: none; }
+
+#forget-wrap { margin: 1rem 0 0; text-align: right; }
+#forget { font-size: .78rem; padding: .3rem .6rem; color: var(--muted); }
+#forget:hover { color: var(--ink); }
 .settings summary { cursor: pointer; font-weight: 600; font-size: .9rem; }
 .settings[open] summary { margin-bottom: .75rem; }
 .settings button { margin-top: .75rem; }

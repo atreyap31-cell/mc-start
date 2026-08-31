@@ -1,8 +1,12 @@
 /* Front end for the Aternos starter.
  *
  * GitHub Pages is static, so this page holds no secrets and does no work - it
- * just calls the API running on the host machine. The passphrase and the API
- * address live in this browser's localStorage and are sent only to that API.
+ * just calls the API running on the host machine.
+ *
+ * There is no password: anyone who has the link can start a server. Stopping
+ * is refused by the API, and starts are rate limited and per-server cooled
+ * down, so the worst anyone can do is start a server that was going to be
+ * startable anyway.
  */
 
 (function () {
@@ -19,7 +23,6 @@
     sub: document.getElementById("sub"),
     banner: document.getElementById("banner"),
     list: document.getElementById("list"),
-    pass: document.getElementById("pass"),
     api: document.getElementById("api"),
     save: document.getElementById("save")
   };
@@ -53,6 +56,7 @@
   function request(path, options) {
     var base = apiBase();
     if (!base) return Promise.reject(new Error("no-api"));
+
     return fetch(base + path, options).then(function (response) {
       return response
         .json()
@@ -64,6 +68,7 @@
             var error = new Error(
               body.error || "Request failed (" + response.status + ")"
             );
+            error.status = response.status;
             // The host's Aternos login lapsed - nothing can start until they
             // sign in again, so the page should say that, not "error".
             error.needsLogin = body.needs_login === true;
@@ -74,49 +79,7 @@
     });
   }
 
-  function act(verb, name, button) {
-    var passphrase = els.pass.value.trim();
-    if (!passphrase) {
-      say("Enter the passphrase first.");
-      els.pass.focus();
-      return;
-    }
-    store("pass", passphrase);
-    busy[name] = true;
-    button.disabled = true;
-    button.textContent = verb === "start" ? "Starting…" : "Stopping…";
-
-    request("/api/" + verb, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ server: name, passphrase: passphrase })
-    })
-      .then(function (body) {
-        if (verb === "start") {
-          say(
-            body.queued
-              ? body.server +
-                  " is queued with Aternos. Free servers wait their turn - this " +
-                  "page updates when it comes online."
-              : body.server + " is online at " + body.address,
-            true
-          );
-        } else {
-          say(body.server + " is shutting down.", true);
-        }
-      })
-      .catch(function (error) {
-        say(error.message === "no-api" ? noApiMessage() : error.message);
-      })
-      .then(function () {
-        busy[name] = false;
-        refresh();
-      });
-  }
-
-  function noApiMessage() {
-    return "No API address set - open Connection settings and paste the tunnel address.";
-  }
+  // --------------------------------------------------------------- clipboard
 
   function legacyCopy(text) {
     return new Promise(function (resolve, reject) {
@@ -158,7 +121,6 @@
     button.setAttribute("aria-label", "Copy address " + address);
 
     button.addEventListener("click", function (event) {
-      // Don't let the click reach the row and trigger anything else.
       event.stopPropagation();
       copyText(address)
         .then(function () {
@@ -166,7 +128,7 @@
           button.classList.add("copied");
         })
         .catch(function () {
-          // Clipboard blocked: select it so they can copy by hand.
+          // Clipboard blocked entirely: select it so they can copy by hand.
           button.textContent = "Select it";
           var node = button.previousSibling;
           if (node && window.getSelection) {
@@ -186,6 +148,43 @@
     });
     return button;
   }
+
+  // ---------------------------------------------------------------- starting
+
+  function act(name, button) {
+    busy[name] = true;
+    button.disabled = true;
+    button.textContent = "Starting…";
+
+    request("/api/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ server: name })
+    })
+      .then(function (body) {
+        say(
+          body.queued
+            ? body.server +
+                " is queued with Aternos. Free servers wait their turn - this " +
+                "page updates when it comes online."
+            : body.server + " is online at " + body.address,
+          true
+        );
+      })
+      .catch(function (error) {
+        say(error.message === "no-api" ? noApiMessage() : error.message);
+      })
+      .then(function () {
+        busy[name] = false;
+        refresh();
+      });
+  }
+
+  function noApiMessage() {
+    return "No API address set - open Connection settings and paste the tunnel address.";
+  }
+
+  // --------------------------------------------------------------- rendering
 
   function render(servers) {
     if (!servers.length) {
@@ -247,7 +246,7 @@
         button.textContent = moving ? "Starting…" : "Start";
         button.disabled = moving || busy[server.name];
         button.addEventListener("click", function () {
-          act("start", server.name, button);
+          act(server.name, button);
         });
         row.appendChild(button);
       }
@@ -292,12 +291,7 @@
     refresh();
   });
 
-  els.pass.addEventListener("change", function () {
-    store("pass", els.pass.value.trim());
-  });
-
   els.api.value = store("api") || DEFAULT_API || "";
-  els.pass.value = store("pass") || "";
 
   refresh();
   setInterval(refresh, POLL_MS);
