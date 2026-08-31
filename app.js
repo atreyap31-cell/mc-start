@@ -118,12 +118,7 @@
     return "No API address set - open Connection settings and paste the tunnel address.";
   }
 
-  function copyText(text) {
-    // navigator.clipboard needs a secure context. GitHub Pages and localhost
-    // both qualify, but fall back for anything that does not.
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text);
-    }
+  function legacyCopy(text) {
     return new Promise(function (resolve, reject) {
       try {
         var scratch = document.createElement("textarea");
@@ -140,6 +135,18 @@
         reject(e);
       }
     });
+  }
+
+  function copyText(text) {
+    // navigator.clipboard needs a secure context AND permission. It can exist
+    // and still reject (embedded browsers, locked-down settings), so fall
+    // through to execCommand on rejection rather than only on absence.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        return legacyCopy(text);
+      });
+    }
+    return legacyCopy(text);
   }
 
   function copyButton(address) {
