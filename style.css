@@ -177,8 +177,12 @@ code {
 footer { margin-top: 2rem; color: var(--muted); font-size: .8rem; }
 footer p { margin: 0 0 .35rem; }
 
-/* Quiet by design - a credit, not a banner. */
+/* The signature on the work - readable, not a whisper. */
 .credit {
-  letter-spacing: .02em;
-  opacity: .75;
+  margin-top: .6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  opacity: .9;
 }
