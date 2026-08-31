@@ -175,3 +175,10 @@ code {
 }
 
 footer { margin-top: 2rem; color: var(--muted); font-size: .8rem; }
+footer p { margin: 0 0 .35rem; }
+
+/* Quiet by design - a credit, not a banner. */
+.credit {
+  letter-spacing: .02em;
+  opacity: .75;
+}
